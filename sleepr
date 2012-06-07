@@ -1,0 +1,37 @@
+#!/usr/bin/env perl
+use v5.14;
+use YAML;
+use Data::Dump qw{ dump };
+use Getopt::Long;
+
+use lib qw{ lib };
+use Sleepr;
+
+#
+# Process CLI options
+GetOptions(
+    'execute=s' => \my $execute,
+    'when=s'    => \my $when,
+    'freq=i'    => \my $freq,
+    'help'      => \my $help
+);
+
+if ( $help || !( $execute || $when || $freq ) ) {
+    say "Usage: $0 OPTIONS";
+    exit 0;
+}
+
+my $f      = $Sleepr::CONFIG_FILE;
+my $config = YAML::LoadFile($f);
+
+$config->{execute}     = $execute           if $execute;
+$config->{at}          = [split ':', $when] if $when;
+$config->{check_every} = $freq              if $freq;
+
+my $yaml = YAML::Dump($config);
+
+open my $fh, '>', $f or die "Can't write to '$f'";
+print $fh $yaml;
+close $fh;
+
+say $yaml;

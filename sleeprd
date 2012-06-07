@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+use v5.14;
+use YAML;
+use Data::Dump qw{ dump };
+use Getopt::Long;
+
+use lib qw{ lib };
+use Sleepr;
+
+#
+# Process CLI options
+my ($help, $verbose) = (0, 0);
+GetOptions(verbose => \$verbose, help => \$help);
+
+if ( $help ) {
+    say "Usage: $0 OPTIONS";
+    exit 0;
+}
+
+Sleepr::loop {
+    my ($cmd, @time) = @_;
+
+    my ($sec, $min, $hour) = localtime;
+    say "Checking for bedtime at $hour:$min:$sec..." if $verbose;
+
+    if ( $hour >= $time[0] && $min >= $time[1] ) {
+        system($cmd);
+    }
+}

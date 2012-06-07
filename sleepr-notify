@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+use v5.14;
+use Getopt::Long;
+
+use lib qw{ lib };
+use Sleepr;
+use Sleepr::Notify;
+
+#
+# Process CLI options
+GetOptions(help => \my $help);
+
+if ( $help ) {
+    say "Usage: $0 OPTIONS";
+    exit 0;
+}
+
+loop {
+    within '10min' => sub {
+        my ($minutes) = @_;
+        notify "It's close to bedtime the system will be sutting down in $minutes minutes");
+    }
+}
