@@ -3,7 +3,7 @@ package Sleepr;
 use YAML;
 use Data::Dump qw{ dump };
 use parent qw{ Exporter };
-our @EXPORT = qw{ loop within };
+our @EXPORT_OK = qw{ loop within config };
 
 our $DEFAULTS = {
     execute     => 'shutdown -h now',

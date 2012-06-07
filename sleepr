@@ -5,7 +5,7 @@ use Data::Dump qw{ dump };
 use Getopt::Long;
 
 use lib qw{ lib };
-use Sleepr;
+use Sleepr qw{ config };
 
 #
 # Process CLI options

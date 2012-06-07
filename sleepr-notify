@@ -3,8 +3,8 @@ use v5.14;
 use Getopt::Long;
 
 use lib qw{ lib };
-use Sleepr;
-use Sleepr::Notify;
+use Sleepr qw{ loop within };
+use Sleepr::Notify qw{ notify };
 
 #
 # Process CLI options
@@ -18,6 +18,6 @@ if ( $help ) {
 loop {
     within '10min' => sub {
         my ($minutes) = @_;
-        notify "It's close to bedtime the system will be sutting down in $minutes minutes");
+        notify "It's close to bedtime the system will be shutting down in $minutes minutes");
     }
 }

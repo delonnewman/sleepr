@@ -1,23 +1,23 @@
 #!/usr/bin/env perl
 use v5.14;
-use YAML;
-use Data::Dump qw{ dump };
 use Getopt::Long;
 
 use lib qw{ lib };
-use Sleepr;
+use Sleepr qw{ loop };
 
 #
 # Process CLI options
-my ($help, $verbose) = (0, 0);
-GetOptions(verbose => \$verbose, help => \$help);
+GetOptions(
+    verbose => \my $verbose,
+    help    => \my $help
+);
 
 if ( $help ) {
     say "Usage: $0 OPTIONS";
     exit 0;
 }
 
-Sleepr::loop {
+loop {
     my ($cmd, @time) = @_;
 
     my ($sec, $min, $hour) = localtime;
