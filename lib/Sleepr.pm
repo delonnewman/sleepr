@@ -71,8 +71,6 @@ sub before($&) {
     };
 
     if ( (my $b = &until_begin) <= $minutes && (my $e = &until_end) >= 0 ) {
-        dump $b;
-        dump $e;
         $blk->($b, $e);
     }
 }
