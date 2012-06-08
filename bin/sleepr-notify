@@ -17,7 +17,7 @@ if ( $help ) {
 
 loop {
     my $time = now;
-    say "Checking for bedtime at '$time'...";
+    say "Checking for bedtime at '$time'..." if $verbose;
 
     before '10min' => sub {
         my ($begin, $end) = @_;
