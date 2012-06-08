@@ -11,12 +11,13 @@ use Sleepr qw{ config };
 # Process CLI options
 GetOptions(
     'execute=s' => \my $execute,
-    'when=s'    => \my $when,
+    'begin=s'   => \my $begin,
+    'end=s'     => \my $end,
     'freq=i'    => \my $freq,
     'help'      => \my $help
 );
 
-if ( $help || !( $execute || $when || $freq ) ) {
+if ( $help || !( $execute || $begin || $end || $freq ) ) {
     say "Usage: $0 OPTIONS";
     exit 0;
 }
@@ -24,9 +25,10 @@ if ( $help || !( $execute || $when || $freq ) ) {
 my $f      = $Sleepr::CONFIG_FILE;
 my $config = YAML::LoadFile($f);
 
-$config->{execute}     = $execute           if $execute;
-$config->{at}          = [split ':', $when] if $when;
-$config->{check_every} = $freq              if $freq;
+$config->{execute}     = $execute            if $execute;
+$config->{at}          = [split ':', $begin] if $begin;
+$config->{until}       = [split ':', $end]   if $end;
+$config->{check_every} = $freq               if $freq;
 
 my $yaml = YAML::Dump($config);
 

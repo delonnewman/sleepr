@@ -3,7 +3,7 @@ use v5.14;
 use Getopt::Long;
 
 use lib qw{ lib };
-use Sleepr qw{ loop };
+use Sleepr qw{ within loop now };
 
 #
 # Process CLI options
@@ -18,12 +18,10 @@ if ( $help ) {
 }
 
 loop {
-    my ($cmd, @time) = @_;
+    my ($cmd) = @_;
 
-    my ($sec, $min, $hour) = localtime;
-    say "Checking for bedtime at $hour:$min:$sec..." if $verbose;
+    my $time = now;
+    say "Checking for bedtime at $time..." if $verbose;
 
-    if ( $hour >= $time[0] && $min >= $time[1] ) {
-        system($cmd);
-    }
+    within { system($cmd) }
 }

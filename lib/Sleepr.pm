@@ -4,13 +4,15 @@ package Sleepr;
 # ABSTRACT: For giving your computer a good sleep routine
 
 use YAML;
+use POSIX;
 use Data::Dump qw{ dump };
 use parent qw{ Exporter };
-our @EXPORT_OK = qw{ loop within config };
+our @EXPORT_OK = qw{ loop within before config now };
 
 our $DEFAULTS = {
     execute     => 'shutdown -h now',
     at          => [qw{ 22 00 }],
+    until       => [qw{ 05 00 }],
     check_every => 30
 };
 
@@ -25,55 +27,83 @@ our $CONFIG_FILE = do {
     $f;
 };
 
-sub loop(&) {
-    my ($blk) = @_;
-
-    while (1) {
-        my $CMD      =   config('execute')     or $DEFAULTS->{execute};
-        my @EXE_TIME = @{config('at')          or $DEFAULTS->{at}};
-        my $INTERVAL =   config('check_every') or $DEFAULTS->{check_every};
+{
+    my $config;
+    sub config($) {
+        my ($key) = @_;
     
-        $blk->($CMD, @EXE_TIME);
-
-        sleep $INTERVAL;
+        $config //= YAML::LoadFile($CONFIG_FILE);
+    
+        $config->{$key};
+    }
+    
+    sub loop(&) {
+        my ($blk) = @_;
+    
+        while (1) {
+            my $CMD      =   config('execute')     or $DEFAULTS->{execute};
+            my @EXE_TIME = @{config('at')          or $DEFAULTS->{at}};
+            my @END_TIME = @{config('until')       or $DEFAULTS->{until}};
+            my $INTERVAL =   config('check_every') or $DEFAULTS->{check_every};
+        
+            $blk->($CMD, @EXE_TIME);
+    
+            $config = undef; # reset config
+            sleep $INTERVAL;
+        }
     }
 }
 
-sub config($) {
-    my ($key) = @_;
-    
-    my $config = YAML::LoadFile($CONFIG_FILE);
-
-    $config->{$key};
-}
-
-sub within($&) {
+sub before($&) {
     my ($term, $blk) = @_;
 
-    $term =~ /(\d+)(min|minutes|hours|hr|hrs)/;
+    $term =~ /(\d+)(min|minutes|hours|hr|hrs|sec|seconds)/;
     my $magnitude = $1;
     my $vector    = $2;
 
     my $minutes = do {
         given ( $vector ) {
+            when (/sec|seconds/)  { $magnitude / 60 }
             when (/min|minutes/)  { $magnitude }
             when (/hr|hrs|hours/) { $magnitude * 60 }
+            default               { $magnitude }
         }
     };
 
-    if ( (my $diff = &time_diff) <= $minutes ) {
-        $blk->($diff);
+    if ( (my $b = &until_begin) <= $minutes && (my $e = &until_end) >= 0 ) {
+        dump $b;
+        dump $e;
+        $blk->($b, $e);
     }
 }
 
-sub time_diff {
-    my ($h1, $m1) = @{config('at')};
-    my ($h2, $m2) = do {
-        my ($sec, $min, $hr) = localtime;
-        ($hr, $min);
-    };
+sub within(&) {
+    my ($blk) = @_;
+    &before('0min', $blk);
+}
 
-    my $t1 = $h1 * 60 + $m1;
+sub now {
+    my ($sec, $min, $hr) = localtime;
+
+    if ( wantarray ) { ($hr, $min, $sec) }
+    else             { POSIX::strftime('%T', localtime) }
+}
+
+sub until_begin {
+    time_diff(@{config('at')})
+}
+
+sub until_end {
+    time_diff(@{config('until')})
+}
+
+sub time_diff {
+    my ($h1, $m1) = @_;
+    my ($h2, $m2) = now;
+
+    my $offset = $h1 < $h2 ? 24 : 1;
+
+    my $t1 = $offset * $h1 * 60 + $m1;
     my $t2 = $h2 * 60 + $m2;
 
     $t1 - $t2;
