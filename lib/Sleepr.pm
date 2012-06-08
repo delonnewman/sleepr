@@ -1,5 +1,8 @@
 use v5.14;
 package Sleepr;
+
+# ABSTRACT: For giving your computer a good sleep routine
+
 use YAML;
 use Data::Dump qw{ dump };
 use parent qw{ Exporter };
