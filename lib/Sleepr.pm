@@ -42,7 +42,7 @@ sub loop(&) {
 sub config($) {
     my ($key) = @_;
     
-    $config = YAML::LoadFile($CONFIG_FILE);
+    my $config = YAML::LoadFile($CONFIG_FILE);
 
     $config->{$key};
 }
