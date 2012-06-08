@@ -39,15 +39,12 @@ sub loop(&) {
     }
 }
 
-{
-    my $config;
-    sub config($) {
-        my ($key) = @_;
+sub config($) {
+    my ($key) = @_;
     
-        $config //= YAML::LoadFile($CONFIG_FILE);
+    $config = YAML::LoadFile($CONFIG_FILE);
 
-        $config->{$key};
-    }
+    $config->{$key};
 }
 
 sub within($&) {
