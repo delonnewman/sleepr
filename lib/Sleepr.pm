@@ -1,7 +1,7 @@
 use v5.14;
 package Sleepr;
 
-# ABSTRACT: Stop hacking, get some sleep
+# ABSTRACT: Stop hacking and get some sleep
 
 use YAML;
 use POSIX;
