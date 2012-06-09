@@ -1,7 +1,7 @@
 use v5.14;
 package Sleepr;
 
-# ABSTRACT: For giving your computer a good sleep routine
+# ABSTRACT: Stop hacking, get some sleep
 
 use YAML;
 use POSIX;
@@ -46,7 +46,7 @@ our $CONFIG_FILE = do {
             my @END_TIME = @{config('until')       or $DEFAULTS->{until}};
             my $INTERVAL =   config('check_every') or $DEFAULTS->{check_every};
         
-            $blk->($CMD, @EXE_TIME);
+            $blk->($CMD, \@EXE_TIME, \@END_TIME);
     
             $config = undef; # reset config
             sleep $INTERVAL;
@@ -70,9 +70,14 @@ sub before($&) {
         }
     };
 
-    if ( (my $b = &until_begin) <= $minutes && (my $e = &until_end) >= 0 ) {
+    if ( (my $b = til('begin')) <= $minutes && (my $e = til('end')) >= 0 ) {
         $blk->($b, $e);
     }
+}
+
+sub within(&) {
+    my ($blk) = @_;
+    &before('0min', $blk);
 }
 
 sub format_time {
@@ -87,12 +92,6 @@ sub format_time {
     }
 }
 
-sub round {
-    my ($num, $places) = @_;
-    
-    
-}
-
 sub plural {
     my ($number, $unit) = @_;
 
@@ -102,11 +101,6 @@ sub plural {
     }
 }
 
-sub within(&) {
-    my ($blk) = @_;
-    &before('0min', $blk);
-}
-
 sub now {
     my ($sec, $min, $hr) = localtime;
 
@@ -114,12 +108,17 @@ sub now {
     else             { POSIX::strftime('%T', localtime) }
 }
 
-sub until_begin {
-    time_diff(@{config('at')})
-}
+sub til {
+    my ($when) = @_;
 
-sub until_end {
-    time_diff(@{config('until')})
+    my %times = (
+        begin => 'at',
+        end   => 'until'
+    );
+
+    die "'$when' is not a valid time" if !!$times{$when};
+
+    time_diff(@{config($times{$when})})
 }
 
 sub time_diff {
