@@ -83,7 +83,7 @@ sub format_time {
     if ( $minutes > 59 ) {
         plural(POSIX::ceil($minutes / 60), "${prefix}hour");
     } else {
-        plural($minutes, "${prefix}minutes");
+        plural($minutes, "${prefix}minute");
     }
 }
 
