@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+#       /etc/rc.d/init.d/
+#
+#
+#
+#
+#
+NAME=sleeprd
+BIN=/usr/local/bin/sleeprd
+
+start() {
+        echo -n "Starting : $NAME"
+        exec $BIN &> /dev/null &
+
+        return
+}
+
+stop() {
+        echo -n "Shutting down : $NAME"
+
+        return
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    reload)
+
+        ;;
+    *)
+        echo "Usage:  {start|stop|status|reload|restart[|probe]"
+        exit 1
+        ;;
+esac
+exit $?

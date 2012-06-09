@@ -3,7 +3,7 @@ use v5.14;
 use Getopt::Long;
 
 use lib qw{ lib };
-use Sleepr qw{ loop before now };
+use Sleepr qw{ loop before now format_time };
 use Sleepr::Notify qw{ notify };
 
 #
@@ -24,11 +24,11 @@ loop {
 
         if ( $begin >= 0 ) {
             notify "It's close to bedtime the system will be
-                   shutting down in $begin minutes";
+                   shutting down in ", format_time($begin);
         }
         else {
             notify "It's bedtime you've requested that the 
-                   system be shutdown for $end more minutes";
+                   system be shutdown for ", format_time($end, 'more');
         }
     }
 }

@@ -7,7 +7,7 @@ use YAML;
 use POSIX;
 use Data::Dump qw{ dump };
 use parent qw{ Exporter };
-our @EXPORT_OK = qw{ loop within before config now };
+our @EXPORT_OK = qw{ loop within before config now format_time plural };
 
 our $DEFAULTS = {
     execute     => 'shutdown -h now',
@@ -75,6 +75,33 @@ sub before($&) {
     }
 }
 
+sub format_time {
+    my ($minutes, $prefix) = @_; # assume minutes
+
+    $prefix && ($prefix .= ' ');
+
+    if ( $minutes > 59 ) {
+        plural(POSIX::ceil($minutes / 60), "${prefix}hour");
+    } else {
+        plural($minutes, "${prefix}minutes");
+    }
+}
+
+sub round {
+    my ($num, $places) = @_;
+    
+    
+}
+
+sub plural {
+    my ($number, $unit) = @_;
+
+    if ( $number == 1 ) { "$number $unit" }
+    else {
+        "$number " . ($unit =~ /s$/ ? "${unit}es" : "${unit}s");
+    }
+}
+
 sub within(&) {
     my ($blk) = @_;
     &before('0min', $blk);
@@ -99,9 +126,9 @@ sub time_diff {
     my ($h1, $m1) = @_;
     my ($h2, $m2) = now;
 
-    my $offset = $h1 < $h2 ? 24 : 1;
+    my $offset = $h1 < $h2 ? 24 : 0;
 
-    my $t1 = $offset * $h1 * 60 + $m1;
+    my $t1 = ($h1 + $offset) * 60 + $m1;
     my $t2 = $h2 * 60 + $m2;
 
     $t1 - $t2;
