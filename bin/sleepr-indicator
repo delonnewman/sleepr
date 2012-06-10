@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+
+from gi.repository import Gtk
+from gi.repository import AppIndicator3 as ai
+
+class PreferencesWindow:
+    def __init__(self):
+        self.__w = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
+        self.__w.set_title("Sleepr Preferences")
+        self.__w.set_default_size(300, 300)
+
+    def show(self):
+        self.__w.show()
+
+class AboutDialog:
+    def __init__(self):
+        self.__d = Gtk.AboutDialog.new()
+
+        self.__d.set_program_name("Sleepr")
+        self.__d.set_authors(["Delon Newman"])
+        self.__d.set_copyright("2012 Delon Newman")
+        self.__d.set_version("0.0.3") # TODO: should be loaded from config file
+
+    def show(self):
+        self.__d.show()
+
+class Indicator:
+    def __init__(self):
+        self.indicator = ai.Indicator.new("sleepr", "indicator-messages", 
+                                          ai.IndicatorCategory.APPLICATION_STATUS)
+
+        self.indicator.set_status(ai.IndicatorStatus.ACTIVE)
+        self.indicator.set_attention_icon("indicator-messages-new")
+
+        menu = Gtk.Menu()
+
+        pref = Gtk.MenuItem("Preferences")
+        pref.connect("activate", self.__show_preferences)
+        menu.append(pref)
+        pref.show()
+
+        about = Gtk.MenuItem("About")
+        about.connect("activate", self.__show_about)
+        menu.append(about)
+        about.show()
+
+        exit = Gtk.MenuItem("Exit")
+        exit.connect("activate", self.__exit)
+        menu.append(exit)
+        exit.show()
+
+        self.indicator.set_menu(menu)
+
+    def show(self):
+        Gtk.main()
+
+    # callbacks
+
+    def __show_preferences(self, w):
+        PreferencesWindow().show()
+
+    def __exit(self, w):
+        Gtk.main_quit()
+
+    def __show_about(self, w):
+        AboutDialog().show()
+
+if __name__ == "__main__":
+    Indicator().show() 
+
+#    indicator = ai.Indicator.new(
+#        "sleepr",
+#        "indicator-messages",
+#        ai.IndicatorCategory.APPLICATION_STATUS)
+#
+#    indicator.set_status(ai.IndicatorStatus.ACTIVE)
+#    indicator.set_attention_icon("indicator-messages-new")
+#
+#    # create a menu
+#    menu = Gtk.Menu()
+#    
+#    pref = Gtk.MenuItem("Preferences")
+#    pref.connect("activate", show_preferences, "Preferences")
+#    
+#    menu.append(pref)
+#
+#    pref.show()
+#
+#    indicator.set_menu(menu)
+#
+#    Gtk.main()
