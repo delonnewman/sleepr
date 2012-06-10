@@ -116,7 +116,7 @@ sub til {
         end   => 'until'
     );
 
-    die "'$when' is not a valid time" if !!$times{$when};
+    die "'$when' is not a valid time" unless $times{$when};
 
     time_diff(@{config($times{$when})})
 }

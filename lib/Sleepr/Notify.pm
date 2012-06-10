@@ -6,6 +6,9 @@ use parent qw{ Exporter };
 our @EXPORT_OK = qw{ notify };
 
 sub notify($@) {
-    Gtk2::Notify->new('Sleepr', join('', @_))->show;
-    1;
+    my ($_, $title, @rest) = $_[0] eq 'title' ? @_ : (undef, undef, @_);
+
+    Gtk2::Notify->new($title || 'Sleepr', join('', @rest))->show;
+
+    !!1;
 }
