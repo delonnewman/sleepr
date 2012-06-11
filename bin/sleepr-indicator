@@ -3,14 +3,88 @@
 from gi.repository import Gtk
 from gi.repository import AppIndicator3 as ai
 
+import yaml, sys
+
+CONFIG_FILE = '/etc/sleepr'
+
 class PreferencesWindow:
     def __init__(self):
-        self.__w = Gtk.Window.new(Gtk.WindowType.TOPLEVEL)
-        self.__w.set_title("Sleepr Preferences")
-        self.__w.set_default_size(300, 300)
+        builder = Gtk.Builder.new()
+        
+        try:
+            builder.add_from_file("lib/preferences-window.glade")
+        except:
+            print "Can't load UI"
+            raise
+
+        self.__w = builder.get_object("PreferencesWindow")
+
+        self.config = self.load_config()
+
+        self.beginHours = builder.get_object("spnBeginHours")
+        self.beginHours.set_range(0, 23)
+        self.beginHours.set_increments(1, -1)
+        self.beginHours.set_value(self.config['at'][0])
+
+        self.beginMinutes = builder.get_object("spnBeginMinutes")
+        self.beginMinutes.set_range(0, 59)
+        self.beginMinutes.set_increments(1, -1)
+        self.beginMinutes.set_value(self.config['at'][1])
+
+        self.endHours = builder.get_object("spnEndHours")
+        self.endHours.set_range(0, 23)
+        self.endHours.set_increments(1, -1)
+        self.endHours.set_value(self.config['until'][0])
+
+        self.endMinutes = builder.get_object("spnEndMinutes")
+        self.endMinutes.set_range(0, 59)
+        self.endMinutes.set_increments(1, -1)
+        self.endMinutes.set_value(self.config['until'][1])
+
+        self.cancelButton = builder.get_object("btnCancel")
+        self.cancelButton.connect("clicked", self.__cancel)
+
+        self.okButton = builder.get_object("btnOK")
+        self.okButton.connect("clicked", self.__ok)
+
 
     def show(self):
         self.__w.show()
+
+    def load_config(self):
+        try:
+            f = open(CONFIG_FILE, 'r')
+            return yaml.load(f.read())
+        except:
+            print "Can't read file '%s'" % CONFIG_FILE 
+
+    def save_config(self, config):
+        print config
+        for k in ['at', 'until']:
+            if config[k]:
+                self.config[k] = config[k]
+
+        try:
+            f = open(CONFIG_FILE, 'w')
+            f.write(yaml.dump(self.config))
+        except:
+            print "Can't write to file '%s'" % CONFIG_FILE
+
+    # callbacks
+
+    def __cancel(self, w):
+        self.__w.hide()
+
+    def __ok(self, w):
+        self.save_config({
+            'at' : [
+                int(self.beginHours.get_value()),
+                int(self.beginMinutes.get_value()) ],
+            'until' : [
+                int(self.endHours.get_value()),
+                int(self.endHours.get_value()) ] })
+
+        self.__w.hide()
 
 class AboutDialog:
     def __init__(self):
@@ -44,10 +118,10 @@ class Indicator:
         menu.append(about)
         about.show()
 
-        exit = Gtk.MenuItem("Exit")
-        exit.connect("activate", self.__exit)
-        menu.append(exit)
-        exit.show()
+        quit = Gtk.MenuItem("Quit")
+        quit.connect("activate", self.__quit)
+        menu.append(quit)
+        quit.show()
 
         self.indicator.set_menu(menu)
 
@@ -59,7 +133,7 @@ class Indicator:
     def __show_preferences(self, w):
         PreferencesWindow().show()
 
-    def __exit(self, w):
+    def __quit(self, w):
         Gtk.main_quit()
 
     def __show_about(self, w):
@@ -67,25 +141,3 @@ class Indicator:
 
 if __name__ == "__main__":
     Indicator().show() 
-
-#    indicator = ai.Indicator.new(
-#        "sleepr",
-#        "indicator-messages",
-#        ai.IndicatorCategory.APPLICATION_STATUS)
-#
-#    indicator.set_status(ai.IndicatorStatus.ACTIVE)
-#    indicator.set_attention_icon("indicator-messages-new")
-#
-#    # create a menu
-#    menu = Gtk.Menu()
-#    
-#    pref = Gtk.MenuItem("Preferences")
-#    pref.connect("activate", show_preferences, "Preferences")
-#    
-#    menu.append(pref)
-#
-#    pref.show()
-#
-#    indicator.set_menu(menu)
-#
-#    Gtk.main()
