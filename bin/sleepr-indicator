@@ -24,21 +24,25 @@ class PreferencesWindow:
         self.beginHours = builder.get_object("spnBeginHours")
         self.beginHours.set_range(0, 23)
         self.beginHours.set_increments(1, -1)
+        self.beginHours.set_wrap(True)
         self.beginHours.set_value(self.config['at'][0])
 
         self.beginMinutes = builder.get_object("spnBeginMinutes")
         self.beginMinutes.set_range(0, 59)
         self.beginMinutes.set_increments(1, -1)
+        self.beginHours.set_wrap(True)
         self.beginMinutes.set_value(self.config['at'][1])
 
         self.endHours = builder.get_object("spnEndHours")
         self.endHours.set_range(0, 23)
         self.endHours.set_increments(1, -1)
+        self.beginHours.set_wrap(True)
         self.endHours.set_value(self.config['until'][0])
 
         self.endMinutes = builder.get_object("spnEndMinutes")
         self.endMinutes.set_range(0, 59)
         self.endMinutes.set_increments(1, -1)
+        self.beginHours.set_wrap(True)
         self.endMinutes.set_value(self.config['until'][1])
 
         self.cancelButton = builder.get_object("btnCancel")
