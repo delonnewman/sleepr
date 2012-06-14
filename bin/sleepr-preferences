@@ -3,16 +3,19 @@
 from gi.repository import Gtk
 from gi.repository import AppIndicator3 as ai
 
-import yaml, sys
+import yaml, sys, os
+import os.path as p
 
 CONFIG_FILE = '/etc/sleepr'
 
 class PreferencesWindow:
     def __init__(self):
         builder = Gtk.Builder.new()
+
+        ui = p.realpath(p.join(p.dirname(sys.argv[0]), '..', 'lib', 'preferences-window.glade'))
         
         try:
-            builder.add_from_file("lib/preferences-window.glade")
+            builder.add_from_file(ui)
         except:
             print "Can't load UI"
             raise
@@ -63,7 +66,6 @@ class PreferencesWindow:
             print "Can't read file '%s'" % CONFIG_FILE 
 
     def save_config(self, config):
-        print config
         for k in ['at', 'until']:
             if config[k]:
                 self.config[k] = config[k]
@@ -74,10 +76,14 @@ class PreferencesWindow:
         except:
             print "Can't write to file '%s'" % CONFIG_FILE
 
+    def quit(self):
+        Gtk.main_quit()
+        sys.exit(0)
+
     # callbacks
 
     def __cancel(self, w):
-        self.__w.hide()
+        self.quit()
 
     def __ok(self, w):
         self.save_config({
@@ -88,60 +94,8 @@ class PreferencesWindow:
                 int(self.endHours.get_value()),
                 int(self.endHours.get_value()) ] })
 
-        self.__w.hide()
-
-class AboutDialog:
-    def __init__(self):
-        self.__d = Gtk.AboutDialog.new()
-
-        self.__d.set_program_name("Sleepr")
-        self.__d.set_authors(["Delon Newman"])
-        self.__d.set_copyright("2012 Delon Newman")
-        self.__d.set_version("0.0.3") # TODO: should be loaded from config file
-
-    def show(self):
-        self.__d.show()
-
-class Indicator:
-    def __init__(self):
-        self.indicator = ai.Indicator.new("sleepr", "indicator-messages", 
-                                          ai.IndicatorCategory.APPLICATION_STATUS)
-
-        self.indicator.set_status(ai.IndicatorStatus.ACTIVE)
-        self.indicator.set_attention_icon("indicator-messages-new")
-
-        menu = Gtk.Menu()
-
-        pref = Gtk.MenuItem("Preferences")
-        pref.connect("activate", self.__show_preferences)
-        menu.append(pref)
-        pref.show()
-
-        about = Gtk.MenuItem("About")
-        about.connect("activate", self.__show_about)
-        menu.append(about)
-        about.show()
-
-        quit = Gtk.MenuItem("Quit")
-        quit.connect("activate", self.__quit)
-        menu.append(quit)
-        quit.show()
-
-        self.indicator.set_menu(menu)
-
-    def show(self):
-        Gtk.main()
-
-    # callbacks
-
-    def __show_preferences(self, w):
-        PreferencesWindow().show()
-
-    def __quit(self, w):
-        Gtk.main_quit()
-
-    def __show_about(self, w):
-        AboutDialog().show()
+        self.quit()
 
 if __name__ == "__main__":
-    Indicator().show() 
+    PreferencesWindow().show() 
+    Gtk.main()
