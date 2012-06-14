@@ -11,8 +11,8 @@ our @EXPORT_OK = qw{ loop within before config now format_time plural };
 
 our $DEFAULTS = {
     execute     => 'shutdown -h now',
-    at          => [qw{ 22 00 }],
-    until       => [qw{ 05 00 }],
+    begin       => [qw{ 22 00 }],
+    end         => [qw{ 05 00 }],
     check_every => 30
 };
 
@@ -42,8 +42,8 @@ our $CONFIG_FILE = do {
     
         while (1) {
             my $CMD      =   config('execute')     or $DEFAULTS->{execute};
-            my @EXE_TIME = @{config('at')          or $DEFAULTS->{at}};
-            my @END_TIME = @{config('until')       or $DEFAULTS->{until}};
+            my @EXE_TIME = @{config('begin')       or $DEFAULTS->{begin}};
+            my @END_TIME = @{config('end')         or $DEFAULTS->{end}};
             my $INTERVAL =   config('check_every') or $DEFAULTS->{check_every};
         
             $blk->($CMD, \@EXE_TIME, \@END_TIME);
@@ -111,14 +111,7 @@ sub now {
 sub til {
     my ($when) = @_;
 
-    my %times = (
-        begin => 'at',
-        end   => 'until'
-    );
-
-    die "'$when' is not a valid time" unless $times{$when};
-
-    time_diff(@{config($times{$when})})
+    time_diff(@{config($when)})
 }
 
 sub time_diff {
