@@ -10,14 +10,15 @@ use Sleepr qw{ config };
 #
 # Process CLI options
 GetOptions(
-    'execute=s' => \my $execute,
-    'begin=s'   => \my $begin,
-    'end=s'     => \my $end,
-    'freq=i'    => \my $freq,
-    'help'      => \my $help
+    'execute=s'   => \my $execute,
+    'begin=s'     => \my $begin,
+    'end=s'       => \my $end,
+    'freq=i'      => \my $freq,
+    'show-config' => \my $show,
+    'help'        => \my $help
 );
 
-if ( $help || !( $execute || $begin || $end || $freq ) ) {
+if ( $help || !( $execute || $begin || $end || $freq || $show ) ) {
     say "Usage: $0 OPTIONS";
     exit 0;
 }
