@@ -1,0 +1,1 @@
+- Rewrite sleepr to use DBUS (see http://stackoverflow.com/questions/13774312/linux-programatically-shutdown-or-reboot-computer-from-a-user-level-process)
