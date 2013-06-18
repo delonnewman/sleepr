@@ -11,10 +11,10 @@ clean:
 	rm src/*.o
 
 
-src/preferences_window.o:
-	$(CC) $(FLAGS) -o src/preferences_window.o src/preferences_window.c $(LIBS)
+src/preferences-window.o:
+	$(CC) $(FLAGS) -o src/preferences-window.o src/preferences-window.c $(LIBS)
 
-bin/sleepr-preferences: src/preferences_window.o
+bin/sleepr-preferences: src/preferences-window.o
 	$(CC) $(FLAGS) -o bin/sleepr-preferences src/main.c $(LIBS)
 
 install:

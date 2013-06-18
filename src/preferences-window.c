@@ -1,17 +1,19 @@
-#include "preferences_window.h"
+#include "preferences-window.h"
 
 GtkWindow *
 preferences_window_new ()
 {
 	GtkBuilder *builder = gtk_builder_new ();
 
-	gint res = gtk_builder_add_from_file (builder, UI_FILE);
+	GError *error;
+
+	gint res = gtk_builder_add_from_file (builder, UI_FILE, &error);
 	if ( res == 0 ) {
-		printf("%s Error: %s", g_quark_to_string(GError->domain), GError->message);
-		exit(1);
+		printf("%s Error: %s", g_quark_to_string(error->domain), error->message);
+		gtk_main_quit();
 	}
 
-	GtkWindow *window = gtk_builder_get_object (builder, "PreferencesWindow");
+	GtkWindow *window = GTK_WINDOW (gtk_builder_get_object (builder, "PreferencesWindow"));
 
 	return window;
 }
