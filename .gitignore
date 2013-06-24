@@ -1,2 +1,4 @@
 .build/
 *.sw*
+bin/sleepr-preferences
+src/*.o
