@@ -1,6 +1,8 @@
 #include "preferences-window.h"
 
-GtkWindow *
+gchar *UI_FILE = "/home/delon/Projects/Personal/sleepr-prefernces/share/sleepr/preferences-window.glade";
+
+GtkWidget *
 preferences_window_new ()
 {
 	GtkBuilder *builder = gtk_builder_new ();
@@ -13,7 +15,7 @@ preferences_window_new ()
 		gtk_main_quit();
 	}
 
-	GtkWindow *window = GTK_WINDOW (gtk_builder_get_object (builder, "PreferencesWindow"));
+	GtkWidget *window = GTK_WINDOW (gtk_builder_get_object (builder, "PreferencesWindow"));
 
 	return window;
 }

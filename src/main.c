@@ -1,4 +1,4 @@
-#include "preferences_window.h"
+#include "preferences-window.h"
 
 int
 main (int argc, char *argv[])

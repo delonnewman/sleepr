@@ -7,15 +7,18 @@ LIBS=`pkg-config --libs gtk+-3.0`
 all: bin/sleepr-preferences
 
 clean:
-	rm bin/sleepr-preferences
-	rm src/*.o
+	rm -f bin/sleepr-preferences
+	rm -f src/*.o
 
 
 src/preferences-window.o:
-	$(CC) $(FLAGS) -o src/preferences-window.o src/preferences-window.c $(LIBS)
+	$(CC) $(FLAGS) -c -o src/preferences-window.o src/preferences-window.c $(LIBS)
 
-bin/sleepr-preferences: src/preferences-window.o
-	$(CC) $(FLAGS) -o bin/sleepr-preferences src/main.c $(LIBS)
+src/main.o:
+	$(CC) $(FLAGS) -c -o src/main.o src/main.c $(LIBS)
+
+bin/sleepr-preferences: src/main.o src/preferences-window.o
+	$(CC) $(FLAGS) -o bin/sleepr-preferences src/main.o src/preferences-window.o $(LIBS)
 
 install:
 	dzil build

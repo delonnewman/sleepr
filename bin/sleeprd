@@ -4,6 +4,7 @@ use Getopt::Long;
 
 use lib qw{ lib };
 use Sleepr qw{ within loop now };
+use Sleepr::System;
 
 #
 # Process CLI options
@@ -18,10 +19,8 @@ if ( $help ) {
 }
 
 loop {
-    my ($cmd) = @_;
-
     my $time = now;
     say "Checking for bedtime at $time..." if $verbose;
 
-    within { system($cmd) }
+    within { Sleepr::System->shutdown }
 }

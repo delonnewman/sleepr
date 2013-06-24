@@ -5,19 +5,23 @@ package Sleepr;
 
 use YAML;
 use POSIX;
+use DateTime;
+use DateTime::Format::DateParse;
 use Data::Dump qw{ dump };
 use parent qw{ Exporter };
 our @EXPORT_OK = qw{ loop within before config now format_time plural };
 
 our $DEFAULTS = {
-    execute     => 'shutdown -h now',
-    begin       => [qw{ 22 00 }],
-    end         => [qw{ 05 00 }],
+    begin       => '10:00 PM',
+    end         => '5:00 AM',
     check_every => 30
 };
 
+# alias
+sub DateParser () { DateTime::Format::DateParse }
+
 our $CONFIG_FILE = do {
-    my $f = "/etc/sleepr";
+    my $f = "$ENV{HOME}/.sleepr";
     unless ( -e $f ) {
         say "No configuration found creating new file at '$f'";
         open my $fh, ">", $f or die "cannot write to $f";
@@ -32,8 +36,27 @@ our $CONFIG_FILE = do {
     sub config($) {
         my ($key) = @_;
     
-        $config //= YAML::LoadFile($CONFIG_FILE);
-    
+        my $now = now();
+        $config //= do {
+            # log time
+            my $c = YAML::LoadFile($CONFIG_FILE);
+            my %c = %$c;
+            $c{begin} = parse_time($c->{begin}, $now);
+            $c{end}   = parse_time($c->{end}, $now);
+            \%c;
+        };
+
+        $config->{begin}         // die "'begin' must be specified in ~/.sleepr";
+        $config->{end}           // die "'end' must be specified in ~/.sleepr";
+        $config->{check_every}   // die "'check_every' must be specified in ~/.sleepr";
+
+        if ( $key eq 'begin' || $key eq 'end' ) {
+            my ($b, $e) = ($config->{begin}, $config->{end});
+            if ( $b && $e && $b > $e ) {
+                $e->add(days => 1) if $e->can('add');
+            }
+        }
+
         $config->{$key};
     }
     
@@ -41,15 +64,14 @@ our $CONFIG_FILE = do {
         my ($blk) = @_;
     
         while (1) {
-            my $CMD      =   config('execute')     or $DEFAULTS->{execute};
-            my @EXE_TIME = @{config('begin')       or $DEFAULTS->{begin}};
-            my @END_TIME = @{config('end')         or $DEFAULTS->{end}};
-            my $INTERVAL =   config('check_every') or $DEFAULTS->{check_every};
+            my $begin    = config('begin');
+            my $end      = config('end');
+            my $interval = config('check_every');
         
-            $blk->($CMD, \@EXE_TIME, \@END_TIME);
+            $blk->($begin, $end);
     
             $config = undef; # reset config
-            sleep $INTERVAL;
+            sleep $interval;
         }
     }
 }
@@ -86,10 +108,24 @@ sub format_time {
     $prefix && ($prefix .= ' ');
 
     if ( $minutes > 59 ) {
-        plural(POSIX::ceil($minutes / 60), "${prefix}hour");
-    } else {
+        plural(POSIX::floor($minutes / 60), "${prefix}hour");
+    }
+    else {
         plural($minutes, "${prefix}minute");
     }
+}
+
+sub parse_time {
+    my ($str, $now) = @_;
+
+    my $d = DateParser->parse_datetime($str);
+    $d->set_time_zone('UTC');
+
+    if ( $now ) {
+        $d->set(year => $now->year, month => $now->month, day => $now->day);
+    }
+
+    $d;
 }
 
 sub plural {
@@ -101,29 +137,17 @@ sub plural {
     }
 }
 
-sub now {
-    my ($sec, $min, $hr) = localtime;
-
-    if ( wantarray ) { ($hr, $min, $sec) }
-    else             { POSIX::strftime('%T', localtime) }
-}
-
 sub til {
     my ($when) = @_;
 
-    time_diff(@{config($when)})
+    my $d = config($when) - now();
+    
+    return $d->minutes * -1 if $d->is_negative;
+    return $d->minutes;
 }
 
-sub time_diff {
-    my ($h1, $m1) = @_;
-    my ($h2, $m2) = now;
-
-    my $offset = $h1 < $h2 ? 24 : 0;
-
-    my $t1 = ($h1 + $offset) * 60 + $m1;
-    my $t2 = $h2 * 60 + $m2;
-
-    $t1 - $t2;
+sub now {
+    DateTime->now(time_zone => 'local')->set_time_zone('UTC');
 }
 
 1;
