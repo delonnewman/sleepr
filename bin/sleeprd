@@ -3,7 +3,8 @@ use v5.14;
 use Getopt::Long;
 
 use lib qw{ lib };
-use Sleepr qw{ within loop now };
+use Sleepr qw{ within loop now before format_time };
+use Sleepr::Notify qw{ notify };
 use Sleepr::System;
 
 #
@@ -18,9 +19,26 @@ if ( $help ) {
     exit 0;
 }
 
+Sleepr::daemonize;
+
 loop {
     my $time = now;
     say "Checking for bedtime at $time..." if $verbose;
 
-    within { Sleepr::System->shutdown }
+    before '10min' => sub {
+        my ($begin, $end) = @_;
+
+        if ( $begin >= 0 ) {
+            notify title => "It's close to bedtime",
+                   "the system will be shutting down in ",
+                   format_time($begin);
+        }
+        else {
+            notify title => "It's bedtime",
+                   "you've requested that the system be shutdown for ",
+                   format_time($end, 'more');
+        }
+    };
+
+    within { Sleepr::System->shutdown };
 }

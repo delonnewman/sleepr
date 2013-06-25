@@ -11,6 +11,8 @@ use Data::Dump qw{ dump };
 use parent qw{ Exporter };
 our @EXPORT_OK = qw{ loop within before config now format_time plural };
 
+our $DEBUG = 1;
+
 our $DEFAULTS = {
     begin       => '10:00 PM',
     end         => '5:00 AM',
@@ -119,7 +121,7 @@ sub parse_time {
     my ($str, $now) = @_;
 
     my $d = DateParser->parse_datetime($str);
-    $d->set_time_zone('UTC');
+    $d->set_time_zone('floating');
 
     if ( $now ) {
         $d->set(year => $now->year, month => $now->month, day => $now->day);
@@ -140,14 +142,33 @@ sub plural {
 sub til {
     my ($when) = @_;
 
-    my $d = config($when) - now();
-    
+    my $c = config($when);
+    my $n = now();
+    my $d = $c - $n;
+
+    if ( $when eq 'end' ) {
+      say "\$c = ", dump($c);
+      say "\$n = ", dump($n);
+      say "\$d = \$c - \$n = ", dump($d);
+    }
+
     return $d->minutes * -1 if $d->is_negative;
     return $d->minutes;
 }
 
 sub now {
-    DateTime->now(time_zone => 'local')->set_time_zone('UTC');
+    DateTime->now(time_zone => 'local')->set_time_zone('floating');
+}
+
+sub daemonize {
+    chdir '/'                  or die "Can't chdir to /: $!";
+    open STDIN, '/dev/null'    or die "Can't read /dev/null: $!";
+    open STDOUT, '>>/dev/null' or die "Can't write to /dev/null: $!";
+    open STDERR, '>>/dev/null' or die "Can't write to /dev/null: $!";
+    defined(my $pid = fork)    or die "Can't fork: $!";
+    exit if $pid;
+    setsid                     or die "Can't start a new session: $!";
+    umask 0;
 }
 
 1;

@@ -9,8 +9,6 @@ main (int argc, char *argv[])
 
 	window = preferences_window_new ();
 
-	g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-
 	gtk_widget_show (window);
 
 	gtk_main ();
